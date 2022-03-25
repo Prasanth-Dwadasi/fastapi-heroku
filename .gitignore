@@ -3,6 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#OS junk files
+[Tt]humbs.db
+*.DS_Store
+
+*.h5
+
+
 # C extensions
 *.so
 
