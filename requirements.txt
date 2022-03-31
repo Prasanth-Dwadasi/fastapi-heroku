@@ -14,3 +14,5 @@ urllib3
 typing
 imageio
 tensorflow
+python-jose[cryptography]
+passlib[bcrypt]
