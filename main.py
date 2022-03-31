@@ -214,6 +214,7 @@ def read_main():
 class Inputs(BaseModel):
     location: str
     starttime: Optional[datetime] = None
+    latest: Optional[bool] = False
 
 #From Outh2Fastapi``
 @app.post("/token", response_model=Token)
@@ -256,7 +257,11 @@ async def read_own_items(current_user: User = Depends(get_current_active_user)):
 def get_predictions_json(input:Inputs):
     input_dict = input.dict()
     location = input_dict["location"]
-    file = predict(location)
+    latest = input_dict['latest']
+    if latest:
+        file = predict(location)
+    else:
+        pass
     if file:
         with open(file, 'rb') as f:
             img_raw = f.read()
