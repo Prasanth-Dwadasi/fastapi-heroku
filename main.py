@@ -45,7 +45,7 @@ def download_model():
     if not os.path.exists("./mse_model.h5"):
         download_file("https://www.dropbox.com/s/95vmmlci5x3acar/mse_model.h5?dl=0")
 
-download_model()
+#download_model()
 
 mse_file  = './mse_model.h5'
 mse_model = tf.keras.models.load_model(mse_file,compile=False,custom_objects={"tf": tf})
