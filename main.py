@@ -367,7 +367,7 @@ def predict(location):
     closest_distances = distanceCal(lat,lon)
     closest_distances = closest_distances[0:3]
     if closest_distances[0][1] >= 500:
-        return None
+        return False
     print(f"closest distances are {closest_distances}")
     nearest_loc_eventids = [x[0] for x in closest_distances]
 

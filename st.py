@@ -8,7 +8,7 @@ import os
 import imageio
 import io
 import base64
-
+from geopy.geocoders import Nominatim
 
 def main():
 
@@ -78,6 +78,12 @@ def main():
                         url = 'http://127.0.0.1:8000/get_predictions_json'
                         headers = {'location': location}
                         r = requests.post(url, json = headers,stream=True)
+                        if 'Error' in str(r.content):
+                            st.markdown("Incorrct location or location exceeds range")
+                        else:
+                            data_url = base64.b64encode(r.content).decode("utf-8")
+                            st.markdown(f'<img src="data:image/gif;base64,{data_url}" alt="cat gif">',unsafe_allow_html=True)
+
                         # string = str(r.content)
                         # if "Error" not in string:
                         #     with open("output.gif", 'wb') as f:
@@ -85,9 +91,9 @@ def main():
                         # # im = Image.open(io.BytesIO(r.content))
                         # file_ = open("./output.gif", "rb")
                         # contents = file_.read()
-                        data_url = base64.b64encode(r.content).decode("utf-8")
+                        #data_url = base64.b64encode(r.content).decode("utf-8")
                         # file_.close()
-                        st.markdown(f'<img src="data:image/gif;base64,{data_url}" alt="cat gif">',unsafe_allow_html=True)
+                        #st.markdown(f'<img src="data:image/gif;base64,{data_url}" alt="cat gif">',unsafe_allow_html=True)
             else:
                 st.markdown(f"Login Failure ")
 
@@ -132,8 +138,9 @@ main()
             #           on_click=submit_add_project, args=(new_project, ))
 
 
-
+'''
 ns-cloud-b1.googledomains.com.
 ns-cloud-b2.googledomains.com.
 ns-cloud-b3.googledomains.com.
 ns-cloud-b4.googledomains.com.
+'''
