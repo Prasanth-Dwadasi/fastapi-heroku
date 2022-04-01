@@ -3,6 +3,7 @@ from fastapi import FastAPI,File, UploadFile
 from fastapi.responses import FileResponse,Response
 # import os
 # import zipfile
+import random
 # import io
 from io import BytesIO
 from typing import Optional
@@ -415,4 +416,29 @@ def save_images(y_preds):
         plt.imsave(f"./images/{i}.jpg",data_y)
     return filepath
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+def search_cache(location):
+    lat,lon = get_latlong(location)
+    closest_distances = distanceCal_cached(lat,lon)
+    # print(closest_distances)
+    if closest_distances[0][1] >= 200:
+        return False
+    else:
+        filename = './output/' + 'ypred' + str(closest_distances[0][0]) + '.gif'
+        print("Images came from cache",filename)
+        return filename
+
+
+search_cache('California')
+
+
+
+
+
+>>>>>>> d84a09c650fb25d20c6f37aeb376e0560ef5aea2
+
+>>>>>>> d6c5947e0fd4613fcfd880caf5fc9e1b4f60db0b
 #predict('New York')
