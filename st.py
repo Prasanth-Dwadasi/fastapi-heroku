@@ -140,9 +140,7 @@ main()
             #           on_click=submit_add_project, args=(new_project, ))
 
 
+
 '''
-ns-cloud-b1.googledomains.com.
-ns-cloud-b2.googledomains.com.
-ns-cloud-b3.googledomains.com.
-ns-cloud-b4.googledomains.com.
+https://codelabs-preview.appspot.com/?file_id=1KH-V6PSW73jn9yeL-NzLM0T7C2pbLdTwGoSIT64zLmc#3
 '''

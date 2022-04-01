@@ -48,8 +48,8 @@ print("mse model loaded")
 norm = {'scale':47.54,'shift':33.44}
 hmf_colors = np.array( [ [82,82,82], [252,141,89],[255,255,191],[145,191,219]])/255
 
-latlong = []
 def generate_cached_images():
+    latlong = []
     h5id = random.sample(range(0, 850), 50)
     for i,id in enumerate(h5id):
         eventid = id_available[id]
@@ -77,7 +77,6 @@ def generate_cached_images():
             for i in range(12):
                 writer.append_data(x_test[:,:,i])
         print(cwd)
-
 
 with DAG(dag_id="generate_predictions_dag",
          start_date=pendulum.datetime(2022,3,31,tz='EST'),
