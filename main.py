@@ -3,6 +3,7 @@ from fastapi import FastAPI,File, UploadFile
 from fastapi.responses import FileResponse,Response
 # import os
 # import zipfile
+import random
 # import io
 from io import BytesIO
 from typing import Optional
@@ -409,5 +410,6 @@ def save_images(y_preds):
             os.mkdir(filepath)
         plt.imsave(f"./images/{i}.jpg",data_y)
     return filepath
+
 
 #predict('New York')
