@@ -31,12 +31,14 @@ import re
 from geopy import distance
 import imageio
 
+'''
 from matplotlib import cm
 from matplotlib.colors import ListedColormap
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 import matplotlib.patches as patches
 from display import get_cmap
+'''
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -45,6 +47,8 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 import pickle
 
+import warnings
+warnings.filterwarnings('ignore')
 
 def download_file(url):
     os.system(f'wget {url}')
@@ -80,8 +84,6 @@ hf = h5py.File('./SEVIR_VIL_STORMEVENTS_2019_0101_0630.h5','r')
 event_id = hf.get('id')
 for i in range(851):
   id_available.append(event_id[i])
-print(event_id)
-print(hf.keys())
 hf.close()
 
 id_available = [int((re.findall("[0-9]+", str(id)))[0])   for id in id_available]
@@ -264,9 +266,8 @@ def get_predictions_json(input:Inputs):
     if latest:
         file = predict(location)
     else:
-        with open ('./latlong.txt', 'rb') as fp:
+        with open ('./outfile', 'rb') as fp:
             itemlist = pickle.load(fp)
-            itemlist.insert(0, time.time()-20000)
             cached_time = itemlist[0]
             current_time = time.time()
             if current_time - cached_time < 1800:
@@ -368,12 +369,13 @@ def distanceCal_cached(lat,long):
     distances = {}
     given = (lat,long)
     itemlist = []
-    with open ('./latlong.txt', 'rb') as fp:
+    with open ('./outfile', 'rb') as fp:
         itemlist = pickle.load(fp)
-    for i,latlongs in enumerate(itemlist):
+    for i,latlongs in enumerate(itemlist[1:]):
         distances[i] = int(distance.distance(given, latlongs).miles)
     distances_sorted = (sorted(distances.items(), key=lambda item: item[1]))
     return (distances_sorted)
+
 
 def get_latlong(adress):
     geolocator = Nominatim(user_agent="Your_Name")
@@ -448,7 +450,6 @@ def save_images(y_preds):
 def search_cache(location):
     lat,lon = get_latlong(location)
     closest_distances = distanceCal_cached(lat,lon)
-    # print(closest_distances)
     if closest_distances[0][1] >= 200:
         return False
     else:
@@ -457,9 +458,9 @@ def search_cache(location):
         return filename
 
 
-search_cache('California')
+#search_cache('California')
 
-
+print("finished")
 
 
 

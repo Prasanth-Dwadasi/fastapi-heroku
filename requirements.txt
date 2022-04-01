@@ -10,6 +10,7 @@ pydantic
 gunicorn
 streamlit
 geopy
+pickle
 urllib3
 typing
 imageio

@@ -10,6 +10,12 @@ import h5py
 import pandas as pd
 import re
 import random
+import time
+import pickle
+
+
+import warnings
+warnings.filterwarnings('ignore')
 
 id_available = []
 hf = h5py.File('/home/prasanthdwadasi/fastapi/fastapi-heroku/SEVIR_VIL_STORMEVENTS_2019_0101_0630.h5','r')
@@ -50,42 +56,27 @@ def generate_cached_images():
         temp = catalog_mod.loc[catalog_mod.event_id == eventid]
         lat,lon = temp.iloc[0,-2],temp.iloc[0,-1]
         latlong.append((lat,lon))
-        print(f"lat long is {latlong[0]}")
+        if i==49 :
+            latlong.insert(0, time.time())
+            with open('/home/prasanthdwadasi/fastapi/fastapi-heroku/outfile', 'wb') as fp:
+                pickle.dump(latlong, fp)
+            print(latlong)
         x_test = getinput_images(id)
         x_test = np.asarray(x_test)
         x_test = np.expand_dims(x_test, axis=0)
         x_test = np.transpose(x_test, (0, 2, 3, 1))
 
-        print((x_test.shape),i)
+        #print((x_test.shape),i)
 
         x_test = x_test.reshape(384, 384, 13)
-        cwd = os.getcwd()
+        #cwd = os.getcwd()
+        cwd = '/home/prasanthdwadasi/fastapi/fastapi-heroku'
         os.makedirs(cwd + '/output', exist_ok=True)
         filepath_gif = cwd + '/output/ypred' + str(i) + '.gif'
         with imageio.get_writer(filepath_gif, mode='I') as writer:
             for i in range(12):
                 writer.append_data(x_test[:,:,i])
-        print("finished")
         print(cwd)
-
-
-        '''
-        yp = mse_model.predict(x_test)
-        y_preds= []
-        if isinstance(yp,(list,)):
-            yp=yp[0]
-        y_preds.append(yp*norm['scale']+norm['shift'])
-        y_preds = np.asarray(y_preds)
-        y_preds = np.squeeze(y_preds, axis=1)
-        print(y_preds.shape)
-        y_preds = y_preds.reshape(384, 384, 12)
-        cwd = os.getcwd()
-        os.makedirs(cwd + '/output', exist_ok=True)
-        filepath_gif = cwd + '/output/ypred' + str(i) + '.gif'
-        with imageio.get_writer(filepath_gif, mode='I') as writer:
-            for i in range(12):
-                writer.append_data(y_preds[:,:,i])
-        '''
 
 
 with DAG(dag_id="generate_predictions_dag",
