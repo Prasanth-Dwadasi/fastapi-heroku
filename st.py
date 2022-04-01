@@ -67,6 +67,8 @@ def main():
                     st.subheader('OR')
 
                     location = st.text_input('Enter the Location',"New York")
+                    latest_check = st.checkbox('Get latest images')
+                    print(latest_check)
                     if st.button("Predict"):
                         st.subheader('Predicted forecast')
                         # r = requests.post(f"http://127.0.0.1:8000/get_predictions/{location}")
@@ -76,7 +78,7 @@ def main():
                             st.write(f"Bsed on the latitude & longitude you entered the location is {location.address} ")
                             location = location.address.split(',')[0]
                         url = 'http://127.0.0.1:8000/get_predictions_json'
-                        headers = {'location': location}
+                        headers = {'location': location,'latest':latest_check}
                         r = requests.post(url, json = headers,stream=True)
                         if 'Error' in str(r.content):
                             st.markdown("Incorrct location or location exceeds range")
