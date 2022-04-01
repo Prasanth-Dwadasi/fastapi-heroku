@@ -15,7 +15,6 @@ from fastapi.responses import StreamingResponse
 import pandas as pd
 # import urllib.request
 import os
-import time
 os.environ["HDF5_USE_FILE_LOCKING"]='FALSE'
 import sys
 import h5py
@@ -43,7 +42,6 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-import pickle
 
 
 def download_file(url):
@@ -260,26 +258,10 @@ def get_predictions_json(input:Inputs):
     input_dict = input.dict()
     location = input_dict["location"]
     latest = input_dict['latest']
-    file = ""
     if latest:
         file = predict(location)
     else:
-        with open ('./latlong.txt', 'rb') as fp:
-            itemlist = pickle.load(fp)
-            itemlist.insert(0, time.time()-20000)
-            cached_time = itemlist[0]
-            current_time = time.time()
-            if current_time - cached_time < 1800:
-                file = search_cache(location)
-                if not file:
-                    file = predict(location)
-            else:
-                file = predict(location)
-
-        # file = search_cache(location)
-        # if not file:
-        #     file = predict(location)
-
+        pass
     if file:
         with open(file, 'rb') as f:
             img_raw = f.read()
@@ -364,17 +346,6 @@ def distanceCal(lat,long):
     distances_sorted = (sorted(distances.items(), key=lambda item: item[1]))
     return (distances_sorted)
 
-def distanceCal_cached(lat,long):
-    distances = {}
-    given = (lat,long)
-    itemlist = []
-    with open ('./latlong.txt', 'rb') as fp:
-        itemlist = pickle.load(fp)
-    for i,latlongs in enumerate(itemlist):
-        distances[i] = int(distance.distance(given, latlongs).miles)
-    distances_sorted = (sorted(distances.items(), key=lambda item: item[1]))
-    return (distances_sorted)
-
 def get_latlong(adress):
     geolocator = Nominatim(user_agent="Your_Name")
     location = geolocator.geocode(adress)  
@@ -394,7 +365,7 @@ def get_location(lat,lon):
     geolocator = Nominatim(user_agent="geoapiExercises")
     location = geolocator.reverse(str(lat)+","+str(lon))
     return location.address.split(',')[0]
-
+  
 def predict(location):
     # download_model()
     lat,lon = get_latlong(location)
@@ -428,7 +399,6 @@ def predict(location):
             # data_y = y_preds[:,:,i]
             writer.append_data(y_preds[:,:,i])
     # file = save_images(y_preds)
-    print("Images came from model")
     return filepath_gif
 
 
@@ -444,24 +414,5 @@ def save_images(y_preds):
             os.mkdir(filepath)
         plt.imsave(f"./images/{i}.jpg",data_y)
     return filepath
-
-def search_cache(location):
-    lat,lon = get_latlong(location)
-    closest_distances = distanceCal_cached(lat,lon)
-    # print(closest_distances)
-    if closest_distances[0][1] >= 200:
-        return False
-    else:
-        filename = './output/' + 'ypred' + str(closest_distances[0][0]) + '.gif'
-        print("Images came from cache",filename)
-        return filename
-
-
-search_cache('California')
-
-
-
-
-
 
 #predict('New York')
