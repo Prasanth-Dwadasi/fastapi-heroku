@@ -9,6 +9,21 @@ import imageio
 import io
 import base64
 from geopy.geocoders import Nominatim
+from google.cloud import bigquery
+from google.oauth2 import service_account
+from datetime import datetime
+from datetime import date
+import pandas as pd
+import json
+
+with open('./Credentials/fastapi-nowcast-9f66828589da.json') as source:
+    info = json.load(source)
+
+credentials = service_account.Credentials.from_service_account_info(info)
+projectid = "fastapi-nowcast"
+client = bigquery.Client(credentials= credentials,project=projectid)
+
+
 
 def main():
 
@@ -46,9 +61,9 @@ def main():
         print(user_creds)
         if login_col.button("Login") or sess.authenticated:
             sess.authenticated = True
-            print("Hii", sess.authenticated)
+            #print("Hii", sess.authenticated)
             token = requests.post('http://127.0.0.1:8000/token',data = user_creds)
-            print(token.status_code)
+            #print(token.status_code)
             if logout_col.button('Log out'):
                 sess.authenticated = False
                 token = None
@@ -68,34 +83,62 @@ def main():
 
                     location = st.text_input('Enter the Location',"New York")
                     latest_check = st.checkbox('Get latest images')
-                    print(latest_check)
-                    if st.button("Predict"):
-                        st.subheader('Predicted forecast')
-                        # r = requests.post(f"http://127.0.0.1:8000/get_predictions/{location}")
-                        if not location:
-                            geolocator = Nominatim(user_agent="geoapiExercises")
-                            location = geolocator.reverse(str(lat)+","+str(long))
-                            st.write(f"Bsed on the latitude & longitude you entered the location is {location.address} ")
-                            location = location.address.split(',')[0]
-                        url = 'http://127.0.0.1:8000/get_predictions_json'
-                        headers = {'location': location,'latest':latest_check}
-                        r = requests.post(url, json = headers,stream=True)
-                        if 'Error' in str(r.content):
-                            st.markdown("Incorrct location or location exceeds range")
-                        else:
-                            data_url = base64.b64encode(r.content).decode("utf-8")
-                            st.markdown(f'<img src="data:image/gif;base64,{data_url}" alt="cat gif">',unsafe_allow_html=True)
+                    #print(latest_check)
+                    today = date.today()
+                    query = """ SELECT COUNT(Username) FROM fastapi-nowcast.Logs.Usage_logs_record where Username = '{}' and Date = '{}'""".format(user,today)
+                    query_job = client.query(query)
+                    result = query_job.result()
+                    no_requests_for_today = 0
+                    for row in result:
+                        print(row[0])
+                        no_requests_for_today = int(row[0])
+                    if(no_requests_for_today > 10):
+                        st.markdown(f"MAXED OUT ON ATTEMPTS FOR THE TODAY")
+                        st.button("Predict",disabled=True)
+                    elif(0 <= no_requests_for_today <=10):
 
-                        # string = str(r.content)
-                        # if "Error" not in string:
-                        #     with open("output.gif", 'wb') as f:
-                        #         f.write(r.content)
-                        # # im = Image.open(io.BytesIO(r.content))
-                        # file_ = open("./output.gif", "rb")
-                        # contents = file_.read()
-                        #data_url = base64.b64encode(r.content).decode("utf-8")
-                        # file_.close()
-                        #st.markdown(f'<img src="data:image/gif;base64,{data_url}" alt="cat gif">',unsafe_allow_html=True)
+                        if st.button("Predict",disabled = False):
+                            query1 = """ SELECT COUNT(Username) FROM fastapi-nowcast.Logs.Usage_logs_record where Username = '{}' and Date = '{}'""".format(user,today)
+                            query1_job = client.query(query1)
+                            result1 = query1_job.result()
+                            for row in result1:
+                                print(row[0])
+                                no_requests_for_today = int(row[0])
+                            if(no_requests_for_today > 10):
+                                st.markdown(f"MAXED OUT ON ATTEMPTS FOR THE TODAY!!!")
+                                st.button("Predict",disabled=True)
+                            st.subheader('Predicted forecast')
+                            # r = requests.post(f"http://127.0.0.1:8000/get_predictions/{location}")
+                            if not location:
+                                geolocator = Nominatim(user_agent="geoapiExercises")
+                                location = geolocator.reverse(str(lat)+","+str(long))
+                                st.write(f"Bsed on the latitude & longitude you entered the location is {location.address} ")
+                                location = location.address.split(',')[0]
+                            url = 'http://127.0.0.1:8000/get_predictions_json'
+                            headers = {'location': location,'latest':latest_check}
+                            r = requests.post(url, json = headers,stream=True)
+                            today = date.today()
+                            now = datetime.now()
+                            query = """ INSERT INTO fastapi-nowcast.Logs.Usage_logs_record VALUES ('{}','{}','{}','{}')""".format(user,today,now,location)
+                            query_job = client.query(query)
+                            result = query_job.result()
+                            print(result)
+                            if 'Error' in str(r.content):
+                                st.markdown("Incorrct location or location exceeds range")
+                            else:
+                                data_url = base64.b64encode(r.content).decode("utf-8")
+                                st.markdown(f'<img src="data:image/gif;base64,{data_url}" alt="cat gif">',unsafe_allow_html=True)
+
+                            # string = str(r.content)
+                            # if "Error" not in string:
+                            #     with open("output.gif", 'wb') as f:
+                            #         f.write(r.content)
+                            # # im = Image.open(io.BytesIO(r.content))
+                            # file_ = open("./output.gif", "rb")
+                            # contents = file_.read()
+                            #data_url = base64.b64encode(r.content).decode("utf-8")
+                            # file_.close()
+                            #st.markdown(f'<img src="data:image/gif;base64,{data_url}" alt="cat gif">',unsafe_allow_html=True)
             else:
                 st.markdown(f"Login Failure ")
 
