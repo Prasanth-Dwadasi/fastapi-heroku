@@ -8,6 +8,7 @@ import os
 import imageio
 import io
 import base64
+import pickle
 from geopy.geocoders import Nominatim
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -16,7 +17,7 @@ from datetime import date
 import pandas as pd
 import json
 
-with open('./Credentials/fastapi-nowcast-9f66828589da.json') as source:
+with open('./credentials/fastapi-nowcast-946843442a99.json') as source:
     info = json.load(source)
 
 credentials = service_account.Credentials.from_service_account_info(info)
@@ -128,6 +129,22 @@ def main():
                             else:
                                 data_url = base64.b64encode(r.content).decode("utf-8")
                                 st.markdown(f'<img src="data:image/gif;base64,{data_url}" alt="cat gif">',unsafe_allow_html=True)
+
+                            url2 = 'https://qdbhg7xfcl.execute-api.us-east-1.amazonaws.com/dev/qa'
+                            x = []
+                            with open('./narrative', 'rb') as fp:
+                                x = (pickle.load(fp))
+                            headers = {'episode_narrative': x[0]}
+                            r2 = requests.post(url2, json = headers,stream=True)
+                            st.write(r2.content)
+                            headers = {'episode_narrative': x[1]}
+                            r3 = requests.post(url2, json = headers,stream=True)
+                            st.write(r3.content)
+
+                            url3 = 'https://aw1rb3co58.execute-api.us-east-1.amazonaws.com/dev/ner'
+                            headers = {'episode_narrative': x[0]}
+                            r4 = requests.post(url3, json = headers,stream=True)
+                            st.write(r4.content)
 
                             # string = str(r.content)
                             # if "Error" not in string:

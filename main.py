@@ -65,6 +65,8 @@ mse_model = tf.keras.models.load_model(mse_file,compile=False,custom_objects={"t
 catalog = pd.read_csv("./CATALOG.csv")
 files = list(catalog[catalog.event_id == 835047].file_name)
 
+storm = pd.read_csv("./StormEvents_details-ftp_v1.0_d2019_c20220330.csv")
+
 
 resource = boto3.resource('s3')
 resource.meta.client.meta.events.register('choose-signer.s3.*', disable_signing)
@@ -397,6 +399,13 @@ def get_location(lat,lon):
     location = geolocator.reverse(str(lat)+","+str(lon))
     return location.address.split(',')[0]
 
+def get_narratives(eventid):
+    event_narrative = str(storm.EVENT_NARRATIVE[storm.EVENT_ID==eventid].iloc[0])
+    episode_narrative = str(storm.EPISODE_NARRATIVE[storm.EVENT_ID==eventid].iloc[0])
+    narratives = [event_narrative,episode_narrative]
+    with open('./narrative', 'wb') as fp:
+        pickle.dump(narratives, fp)
+
 def predict(location):
     # download_model()
     lat,lon = get_latlong(location)
@@ -406,6 +415,7 @@ def predict(location):
         return False
     print(f"closest distances are {closest_distances}")
     nearest_loc_eventids = [x[0] for x in closest_distances]
+    get_narratives(nearest_loc_eventids[0])
 
     loc_index = [id_available.index(ind) for evt in nearest_loc_eventids for ind in id_available if evt == ind]
     print(f"loc index is {loc_index}")

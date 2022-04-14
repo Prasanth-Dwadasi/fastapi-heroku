@@ -6,6 +6,11 @@ __pycache__/
 #OS junk files
 [Tt]humbs.db
 *.DS_Store
+__MACOSX
+
+*.json
+
+
 
 *.h5
 *.gif
